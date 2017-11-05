@@ -44,6 +44,21 @@ trait QScriptHelpers extends CompilerHelpers with TTypes[Fix] {
     Const[DeadEnd, ?]
   )#M[A]
 
+  implicit val qScriptCoreToQScript: Injectable.Aux[QScriptCore, QS] =
+    Injectable.inject[QScriptCore, QS]
+
+  implicit val thetaJoinToQScript: Injectable.Aux[ThetaJoin, QS] =
+    Injectable.inject[ThetaJoin, QS]
+
+  implicit val readFileToQScript: Injectable.Aux[Const[Read[AFile], ?], QS] =
+    Injectable.inject[Const[Read[AFile], ?], QS]
+
+  implicit val readDirToQScript: Injectable.Aux[Const[Read[ADir], ?], QS] =
+    Injectable.inject[Const[Read[ADir], ?], QS]
+
+  implicit val deadEndToQScript: Injectable.Aux[Const[DeadEnd, ?], QS] =
+    Injectable.inject[Const[DeadEnd, ?], QS]
+
   val DE = implicitly[Const[DeadEnd, ?]     :<: QS]
   val RD = implicitly[Const[Read[ADir], ?]  :<: QS]
   val RF = implicitly[Const[Read[AFile], ?] :<: QS]
@@ -55,6 +70,8 @@ trait QScriptHelpers extends CompilerHelpers with TTypes[Fix] {
       ::\::[ThetaJoin](
         ::\::[Const[Read[ADir], ?]](
           ::/::[Fix, Const[Read[AFile], ?], Const[DeadEnd, ?]])))
+
+  val (func, free, fix) = construction.mkDefaults[Fix, QS]
 
   val RootR: QS[Fix[QS]] = DE.inj(Const[DeadEnd, Fix[QS]](Root))
   val UnreferencedR: QS[Fix[QS]] = QC.inj(Unreferenced[Fix, Fix[QS]]())
@@ -162,6 +179,9 @@ trait QScriptHelpers extends CompilerHelpers with TTypes[Fix] {
     (implicit T: Corecursive.Aux[T, F])
       : T =
     ops.foldLeft(op.embed)((acc, elem) => elem.as(acc).embed)
+
+  def chainR[T](in: T)(fs: (T => T)*): T =
+    fs.foldLeft(in)((t, f) => f(t))
 
   val listContents: DiscoverPath.ListContents[Id] =
     d =>
