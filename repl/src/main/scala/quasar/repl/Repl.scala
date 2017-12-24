@@ -248,18 +248,25 @@ object Repl {
               expr  <- ST.newScope("parse SQL", DF.unattempt_(sql.fixParser.parse(q.value).leftMap(_.message)))
               block <- ST.newScope("resolve imports", DF.unattemptT(resolveImports(expr, state.cwd).leftMap(_.message)))
               vars  = Variables.fromMap(state.variables)
-              _     <- ST.newScope("execute query", n.cata(name =>
+              _     <- n.cata(name =>
                          {
                            val out = state.cwd </> file(name)
-                           val query = fsQ.executeQuery(block, Variables.fromMap(state.variables), state.cwd, out)
-                           runQuery(state, query)(κ(
-                             P.println("Wrote file: " + posixCodec.printPath(out))))
+                           for {
+                             query <- ST.newScope("plan query",
+                               fsQ.executeQuery(block, Variables.fromMap(state.variables), state.cwd, out).pure[Free[S, ?]])
+                             results <- ST.newScope("evaluate query",
+                              runQuery(state, query)(κ(P.println("Wrote file: " + posixCodec.printPath(out)))))
+                           } yield results
                          },
                          {
-                           val query = fsQ.queryResults(block, vars, state.cwd, 0L, state.summaryCount.map(widenPositive[Refined, _0]))
-                             .map(_.toVector)
-                           runQuery(state, query)(ds => summarize[S](state.summaryCount.map(_.value), state.format)(ds))
-                         }))
+                           for {
+                             query <- ST.newScope("plan query",
+                               fsQ.queryResults(block, vars, state.cwd, 0L, state.summaryCount.map(widenPositive[Refined, _0]))
+                                 .map(_.toVector).pure[Free[S, ?]])
+                             results <- ST.newScope("evaluate query",
+                              runQuery(state, query)(ds => summarize[S](state.summaryCount.map(_.value), state.format)(ds)))
+                           } yield results
+                         })
             } yield ())
         }))
 
