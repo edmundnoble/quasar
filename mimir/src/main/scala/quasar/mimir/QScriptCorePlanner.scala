@@ -31,7 +31,6 @@ import quasar.yggdrasil.TableModule
 import quasar.yggdrasil.bytecode.{JArrayFixedT, JType}
 
 import cats.effect.IO
-import delorean._
 // import fs2.interop.scalaz._
 import matryoshka.{Hole => _, _}
 import matryoshka.implicits._
@@ -41,7 +40,6 @@ import scalaz._, Scalaz._
 import shims._
 
 import scala.collection.immutable.{Map => ScalaMap}
-import scala.concurrent.ExecutionContext.Implicits.global
 
 final class QScriptCorePlanner[T[_[_]]: BirecursiveT: EqualT: ShowT, F[_]: Monad](
     liftF: IO ~> F, liftFCake: CakeM ~> F) {

@@ -31,8 +31,6 @@ import scalaz._, Scalaz._
 import scalaz.Leibniz.===
 import scalaz.concurrent.Task
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 object MimirCake {
 
   type Cake = Precog with Singleton

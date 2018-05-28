@@ -30,10 +30,6 @@ import java.util.SortedMap
 
 import cats.effect.IO
 
-import scalaz._
-
-import shims._
-
 import scala.collection.JavaConverters._
 
 /**

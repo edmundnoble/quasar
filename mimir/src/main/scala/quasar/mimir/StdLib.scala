@@ -24,7 +24,6 @@ import quasar.yggdrasil.table._
 
 import cats.effect.IO
 import scalaz._
-import Scalaz._
 import java.time._
 
 trait TableLibModule extends TableModule with TransSpecModule {
